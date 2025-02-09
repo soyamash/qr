@@ -138,11 +138,10 @@ int LUDecomp(std::vector<std::vector<double> > &m,
         double tmp = m[k][m_col];
         m[k][m_col] = m[p_cur][m_col];
         m[p_cur][m_col] = tmp;
-
-        size_t tmp_p = pivot[k];
-        pivot[k] = pivot[p_cur];
-        pivot[p_cur] = tmp_p;
       }
+      size_t tmp_p = pivot[k];
+      pivot[k] = pivot[p_cur];
+      pivot[p_cur] = tmp_p;
     }
 
     for (size_t m_row = k + 1; m_row < m.size(); m_row++) {
@@ -162,14 +161,14 @@ int inverseIteration(std::vector<std::vector<double> > &matrix,
 
   std::vector<std::vector<double> > lu(matrix);
   for (size_t lu_idx = 0; lu_idx < matrix.size(); lu_idx++) {
-    lu[lu_idx][lu_idx] -=val;
+    lu[lu_idx][lu_idx] -= (val + EPS);
   }
 
   std::vector<size_t> pivot;
   LUDecomp(lu, pivot);
-
+  std::vector<double> v_prev(v.size());
   for (int iter = 0; iter < 1000; iter++) {
-    std::vector<double> v_prev(v);
+    v_prev = v;
 
     for (size_t v_idx = 0; v_idx < v.size(); v_idx++) {
       v[v_idx] = v_prev[pivot[v_idx]];
@@ -202,12 +201,14 @@ int inverseIteration(std::vector<std::vector<double> > &matrix,
     /* 収束判定 */
     bool conv_flag = true;
     for (size_t v_idx = 0; v_idx < v.size(); v_idx++) {
-      if (std::abs(v_prev[v_idx] - v[v_idx]) > EPS) {
+      if (std::abs(std::abs(v_prev[v_idx]) - std::abs(v[v_idx])) > EPS) {
         conv_flag = false;
         break;
       } 
     }
-    if (conv_flag) break;
+    if (conv_flag) {
+      break;
+    }
   }
   return 0;
 }
@@ -291,6 +292,7 @@ int main () {
   std::vector<std::vector<double> > eigen_vec;
   std::vector<double> eigen_value;
   qr(m, eigen_vec, eigen_value);
+  printf("%8.8e", eigen_vec[0][0]);
   // for(size_t i = 0; i < eigen_vec.size(); i++){
 	// 	for(size_t j = 0; j < eigen_vec[i].size(); j++){
   //     printf("%8.8e", eigen_vec[i][j]);
